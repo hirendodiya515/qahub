@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QA Hub — Dashboard Central</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --glass-blue:#7DD4FC;
+  --glass-cyan:#A5F3FC;
+  --glass-teal:#2DD4BF;
+  --glass-white:rgba(255,255,255,0.92);
+  --glass-dim:rgba(186,230,253,0.08);
+  --glass-border:rgba(186,230,253,0.18);
+  --glass-border-bright:rgba(186,230,253,0.38);
+  --glass-shine:rgba(255,255,255,0.55);
+  --text-primary:#E0F2FE;
+  --text-secondary:#7DD4FC;
+  --text-muted:#3B6A8A;
+  --bg-deep:#060A10;
+  --amber:#E8930A;
+  --amber-light:#F5B942;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg-deep);color:var(--text-primary);min-height:100vh;overflow-x:hidden}
+
+/* ── BACKGROUND LAYERS ── */
+#bgCanvas{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.7}
+
+.bg-orbs{position:fixed;inset:0;z-index:0;pointer-events:none}
+.orb{position:absolute;border-radius:50%;filter:blur(90px);animation:drift 20s ease-in-out infinite alternate}
+.orb1{width:500px;height:500px;background:radial-gradient(circle,rgba(14,116,144,0.5) 0%,transparent 70%);top:-160px;right:-100px;animation-duration:22s}
+.orb2{width:400px;height:400px;background:radial-gradient(circle,rgba(8,145,178,0.35) 0%,transparent 70%);bottom:-80px;left:-80px;animation-duration:26s;animation-delay:-9s}
+.orb3{width:300px;height:300px;background:radial-gradient(circle,rgba(6,182,212,0.2) 0%,transparent 70%);top:35%;left:25%;animation-duration:18s;animation-delay:-14s}
+@keyframes drift{from{transform:translate(0,0) scale(1)}to{transform:translate(35px,25px) scale(1.1)}}
+
+.grid-bg{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(125,212,252,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(125,212,252,0.03) 1px,transparent 1px);
+  background-size:55px 55px}
+.scanline{position:fixed;left:0;right:0;height:1px;z-index:1;pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(125,212,252,0.3),transparent);
+  animation:scan 10s linear infinite;opacity:0.4}
+@keyframes scan{from{top:-1px}to{top:100vh}}
+
+/* ── APP ── */
+.app{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column}
+
+/* ── HEADER ── */
+header{padding:0 2.5rem;height:68px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:0.5px solid var(--glass-border);
+  background:rgba(6,10,16,0.7);backdrop-filter:blur(24px) saturate(180%);
+  position:sticky;top:0;z-index:100}
+.logo-area{display:flex;align-items:center;gap:14px}
+.logo-icon{width:38px;height:38px;border:1px solid var(--glass-border-bright);border-radius:8px;
+  display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;
+  background:rgba(125,212,252,0.06)}
+.logo-icon::before{content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,0.12) 0%,transparent 60%)}
+.logo-diamond{width:16px;height:16px;border:1.5px solid var(--glass-blue);transform:rotate(45deg);
+  position:relative;z-index:1;animation:pulse-logo 3s ease-in-out infinite;
+  background:rgba(125,212,252,0.15)}
+@keyframes pulse-logo{0%,100%{box-shadow:0 0 8px rgba(125,212,252,0.6)}50%{box-shadow:none}}
+.logo-text h1{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;letter-spacing:2px;color:var(--glass-cyan);line-height:1}
+.logo-text span{font-size:11px;letter-spacing:3px;color:var(--text-muted);text-transform:uppercase}
+.live-badge{display:flex;align-items:center;gap:6px;font-size:11px;letter-spacing:2px;color:var(--text-muted);text-transform:uppercase}
+.live-dot{width:6px;height:6px;border-radius:50%;background:#22D3EE;animation:blink 2s ease-in-out infinite;box-shadow:0 0 6px #22D3EE}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
+
+/* ── HERO ── */
+.hero-strip{padding: 1.5rem}
+.hero-eyebrow{font-family:'Rajdhani',sans-serif;font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px}
+.hero-headline{font-family:'Rajdhani',sans-serif;font-size:32px;font-weight:700;letter-spacing:1px;color:var(--text-primary);line-height:1.2}
+.hero-headline span{color:var(--glass-blue)}
+.hero-sub{font-size:14px;color:var(--text-muted);font-weight:300;margin-top:10px}
+
+/* ── STATS ── */
+.stats-bar{padding:0 2.5rem 1.5rem;display:flex;gap:2rem;align-items:center}
+.stat-num{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:var(--glass-cyan)}
+.stat-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-left:6px}
+.stat-sep{width:1px;height:28px;background:var(--glass-border)}
+
+/* ── TOOLBAR ── */
+.toolbar{padding:0 2.5rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.categories{display:flex;gap:8px;flex-wrap:wrap}
+.cat-btn{font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;
+  padding:6px 14px;border-radius:4px;cursor:pointer;
+  border:0.5px solid var(--glass-border);
+  background:rgba(125,212,252,0.04);color:var(--text-muted);transition:all .2s;
+  backdrop-filter:blur(8px)}
+.cat-btn:hover,.cat-btn.active{
+  background:rgba(125,212,252,0.12);border-color:var(--glass-border-bright);color:var(--glass-cyan)}
+.search-bar{display:flex;align-items:center;gap:10px;
+  background:rgba(125,212,252,0.05);
+  border:0.5px solid var(--glass-border);
+  border-radius:8px;padding:10px 16px;width:280px;
+  backdrop-filter:blur(12px);transition:border-color .2s}
+.search-bar:focus-within{border-color:var(--glass-border-bright)}
+.search-bar svg{width:15px;height:15px;color:var(--text-muted);flex-shrink:0}
+.search-bar input{background:none;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text-primary);flex:1}
+.search-bar input::placeholder{color:var(--text-muted)}
+
+/* ── FROSTED GLASS CARDS ── */
+.grid{padding:0 2.5rem 3rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+
+.dash-card{
+  position:relative;overflow:hidden;
+  border-radius:16px;cursor:pointer;
+  animation:cardIn .4s ease both;
+  display:flex;flex-direction:column;
+  /* Frosted glass core */
+  background:rgba(14,28,45,0.45);
+  backdrop-filter:blur(20px) saturate(160%);
+  -webkit-backdrop-filter:blur(20px) saturate(160%);
+  border:1px solid rgba(125,212,252,0.14);
+  transition:transform .3s,border-color .3s,box-shadow .3s;
+}
+/* inner glass shine layer */
+.dash-card::before{
+  content:'';position:absolute;inset:0;border-radius:16px;pointer-events:none;z-index:1;
+  background:linear-gradient(135deg,rgba(255,255,255,0.07) 0%,rgba(255,255,255,0.01) 40%,transparent 70%);
+}
+/* bottom edge glow */
+.dash-card::after{
+  content:'';position:absolute;left:10%;right:10%;bottom:0;height:1px;pointer-events:none;z-index:1;
+  background:linear-gradient(90deg,transparent,rgba(125,212,252,0.35),transparent);
+  opacity:0;transition:opacity .3s;
+}
+.dash-card:hover{
+  transform:translateY(-4px) scale(1.01);
+  border-color:rgba(125,212,252,0.32);
+  box-shadow:
+    0 20px 60px rgba(0,0,0,0.6),
+    0 0 0 1px rgba(125,212,252,0.1),
+    inset 0 1px 0 rgba(255,255,255,0.1),
+    0 0 40px rgba(14,116,144,0.15);
+}
+.dash-card:hover::after{opacity:1}
+
+@keyframes cardIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+/* top accent bar — liquid glass gradient */
+.card-accent{
+  height:2px;position:relative;z-index:2;
+  background:linear-gradient(90deg,transparent 0%,var(--cc,#7DD4FC) 30%,rgba(255,255,255,0.8) 50%,var(--cc,#7DD4FC) 70%,transparent 100%);
+  opacity:0.7;
+}
+
+.card-body{padding:1.25rem 1.4rem 1rem;flex:1;position:relative;z-index:2}
+.card-icon-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+
+/* frosted icon box */
+.card-icon{
+  width:42px;height:42px;border-radius:10px;
+  background:rgba(125,212,252,0.08);
+  border:1px solid rgba(125,212,252,0.18);
+  display:flex;align-items:center;justify-content:center;font-size:19px;
+  transition:all .25s;
+  backdrop-filter:blur(8px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.12);
+}
+.dash-card:hover .card-icon{
+  background:rgba(125,212,252,0.16);
+  border-color:rgba(125,212,252,0.35);
+  box-shadow:0 0 16px rgba(125,212,252,0.15),inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+/* frosted tag pill */
+.card-tag{
+  font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;
+  padding:4px 10px;border-radius:20px;
+  background:rgba(125,212,252,0.08);
+  border:0.5px solid rgba(125,212,252,0.22);
+  color:var(--glass-cyan);
+  backdrop-filter:blur(6px);
+}
+
+.card-title{font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;letter-spacing:.5px;color:var(--text-primary);margin-bottom:6px}
+.card-desc{font-size:13px;color:#6B9AB8;font-weight:300;line-height:1.55}
+
+.card-footer{
+  padding:10px 1.4rem;
+  border-top:1px solid rgba(125,212,252,0.07);
+  display:flex;align-items:center;justify-content:space-between;
+  position:relative;z-index:2;
+  background:rgba(0,0,0,0.12);
+}
+.card-url{font-size:11px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
+.open-btn{
+  font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--glass-blue);background:none;border:none;cursor:pointer;
+  display:flex;align-items:center;gap:5px;transition:gap .2s,color .2s;text-decoration:none;
+}
+.open-btn:hover{gap:8px;color:var(--glass-cyan)}
+.open-btn svg{width:12px;height:12px}
+
+.empty-state{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;padding:5rem 2rem;color:var(--text-muted);text-align:center}
+
+/* ── FOOTER ── */
+footer{margin-top:auto;padding:1.5rem 2.5rem;border-top:0.5px solid var(--glass-border);
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(6,10,16,0.5);backdrop-filter:blur(12px)}
+.footer-note{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted)}
+.footer-ver{font-family:'Rajdhani',sans-serif;font-size:12px;color:var(--text-muted);letter-spacing:1px}
+</style>
+</head>
+<body>
+
+<!-- QA particle canvas — BEHIND everything -->
+<canvas id="bgCanvas"></canvas>
+
+<!-- atmospheric orbs -->
+<div class="bg-orbs">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+</div>
+<div class="grid-bg"></div>
+<div class="scanline"></div>
+
+<div class="app">
+  <header>
+    <div class="logo-area">
+      <div class="logo-icon"><div class="logo-diamond"></div></div>
+      <div class="logo-text">
+        <h1>QA HUB</h1>
+        <span>Centralized Operations Portal</span>
+      </div>
+    </div>
+    <div class="live-badge"><div class="live-dot"></div> Systems Online</div>
+  </header>
+
+  <div class="hero-strip">
+    
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat-item">
+      <span class="stat-num" id="totalCount">0</span><span class="stat-label">Total Systems</span>
+    </div>
+    <div class="stat-sep"></div>
+    <div class="stat-item">
+      <span class="stat-num" id="catCount">0</span><span class="stat-label">Categories</span>
+    </div>
+    <div class="stat-sep"></div>
+    <div class="stat-item">
+      <span class="stat-num" id="activeFilter">All</span><span class="stat-label">Active Filter</span>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="categories" id="categoryTabs"></div>
+    <div class="search-bar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="searchInput" placeholder="Search dashboards…" oninput="renderCards()">
+    </div>
+  </div>
+
+  <div class="grid" id="cardGrid"></div>
+
+  <footer>
+    <div class="footer-note">Glass QA · Process Hub</div>
+    <div class="footer-ver" id="footerVer"></div>
+  </footer>
+</div>
+
+<script>
+// ════════════════════════════════════════════════
+//  ✏️  EDIT YOUR DASHBOARDS HERE
+// ════════════════════════════════════════════════
+const DASHBOARDS = [
+  {
+    name:"Roller Management System",
+    url:"https://roller-management.vercel.app",
+    cat:"Production",
+    desc:"Track and manage roller status, inventory and approval details with quick analytics.",
+    icon:"⚙️", color:"#7DD4FC"
+  },
+  {
+    name:"Document Management System",
+    url:"http://192.168.4.6:5173",
+    cat:"Management",
+    desc:"Centralised repository for SOPs, work instructions and quality records.",
+    icon:"🗂️", color:"#A5F3FC"
+  },
+  {
+    name:"ISRA Dashboard SG#3.1",
+    url:"http://192.168.1.219:8501/",
+    cat:"Quality",
+    desc:"Real-time defect tracking, categorisation and trend analysis by line.",
+    icon:"🔬", color:"#2DD4BF"
+  },
+  {
+    name:"ISRA Dashboard SG#3.2",
+    url:"http://192.168.1.219:8502/",
+    cat:"Quality",
+    desc:"Real-time defect tracking, categorisation and trend analysis by line.",
+    icon:"🔬", color:"#2DD4BF"
+  },
+  {
+    name:"Centralized datahub",
+    url:"http://192.168.1.219:5004/",
+    cat:"Production",
+    desc:"Data center for all production lines, aggregating machine data, quality metrics and performance KPIs.",
+    icon:"📈", color:"#67E8F9"
+  },
+  {
+    name:"AFR monitoring",
+    url:"http://192.168.1.219:5174/",
+    cat:"Engineering",
+    desc:"System for monitoring and analysing AFR (Annual Failure Rate) data across production lines.",
+    icon:"📊", color:"#BAE6FD"
+  },
+  {
+    name:"MOC tracker",
+    url:"http://192.168.4.6:5174/",
+    cat:"Management",
+    desc:"Platform to create MOC with tracking and approval workflows for process changes.",
+    icon:"📊", color:"#BAE6FD"
+  },
+];
+// ════════════════════════════════════════════════
+
+// ── QA GLASS FRAGMENT ANIMATION (BACKGROUND) ─────────────────────────────────
+(function(){
+  const canvas = document.getElementById('bgCanvas');
+  const ctx    = canvas.getContext('2d');
+  let W, H, particles=[], targets=[];
+  let phase=0, phaseTimer=0;
+
+  // Glass shard colors — cool icy blues/cyans
+  const SHARD_COLORS = [
+    [125,212,252],  // sky blue
+    [165,243,252],  // light cyan
+    [45, 212,191],  // teal
+    [103,232,249],  // cyan
+    [186,230,253],  // pale blue
+    [224,242,254],  // ice white-blue
+    [255,255,255],  // pure white glint
+  ];
+
+  function resize(){
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    buildTargets();
+    if(!particles.length) spawnParticles();
+  }
+
+  function buildTargets(){
+    const off  = document.createElement('canvas');
+    off.width  = W; off.height = H;
+    const octx = off.getContext('2d');
+    const fs   = Math.min(W * 0.42, 340);
+    octx.clearRect(0,0,W,H);
+    octx.fillStyle = '#fff';
+    octx.font = `700 ${fs}px "Rajdhani",sans-serif`;
+    octx.textAlign    = 'center';
+    octx.textBaseline = 'middle';
+    octx.fillText('QA', W/2, H/2);
+    const img = octx.getImageData(0,0,W,H).data;
+    const step = 8;
+    targets = [];
+    for(let y=0;y<H;y+=step){
+      for(let x=0;x<W;x+=step){
+        if(img[(y*W+x)*4+3]>100) targets.push({x,y});
+      }
+    }
+    // shuffle
+    for(let i=targets.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [targets[i],targets[j]]=[targets[j],targets[i]];
+    }
+  }
+
+  function spawnParticles(){
+    const count = Math.min(targets.length, 520);
+    particles = [];
+    for(let i=0;i<count;i++){
+      const t   = targets[i%targets.length];
+      const rgb = SHARD_COLORS[Math.floor(Math.random()*SHARD_COLORS.length)];
+      particles.push({
+        x:Math.random()*W, y:Math.random()*H,
+        tx:t.x, ty:t.y,
+        sx:Math.random()*W, sy:Math.random()*H,
+        size: 2 + Math.random()*3.5,
+        sides: 3 + Math.floor(Math.random()*4),
+        rot: Math.random()*Math.PI*2,
+        rotSpd: (Math.random()-.5)*0.05,
+        alpha:0,
+        rgb,
+        spd: 0.045 + Math.random()*0.04,
+        // refraction offset — makes shards feel like glass bending light
+        refract: (Math.random()-.5)*4,
+      });
+    }
+  }
+
+  function drawShard(p, alpha){
+    ctx.save();
+    ctx.translate(p.x + p.refract*alpha, p.y);
+    ctx.rotate(p.rot);
+    const [r,g,b] = p.rgb;
+    // Main shard body
+    ctx.beginPath();
+    for(let i=0;i<p.sides;i++){
+      const ang = (i/p.sides)*Math.PI*2;
+      const rad = p.size*(0.55+Math.random()*0.45);
+      i===0 ? ctx.moveTo(Math.cos(ang)*rad,Math.sin(ang)*rad)
+            : ctx.lineTo(Math.cos(ang)*rad,Math.sin(ang)*rad);
+    }
+    ctx.closePath();
+    // Glass fill — semi-transparent with slight tint
+    ctx.fillStyle   = `rgba(${r},${g},${b},${Math.min(alpha*0.22,0.22)})`;
+    ctx.strokeStyle = `rgba(${r},${g},${b},${Math.min(alpha*0.9,0.9)})`;
+    ctx.lineWidth   = 0.6;
+    ctx.fill();
+    ctx.stroke();
+    // Specular highlight — white glint across the shard
+    ctx.beginPath();
+    ctx.moveTo(-p.size*.5,-p.size*.4);
+    ctx.lineTo( p.size*.15,-p.size*.6);
+    ctx.lineTo( p.size*.05,-p.size*.1);
+    ctx.closePath();
+    ctx.fillStyle = `rgba(255,255,255,${Math.min(alpha*0.45,0.45)})`;
+    ctx.fill();
+    // Secondary edge glint
+    ctx.beginPath();
+    ctx.moveTo( p.size*.3, p.size*.2);
+    ctx.lineTo( p.size*.5, p.size*.4);
+    ctx.strokeStyle = `rgba(255,255,255,${Math.min(alpha*0.3,0.3)})`;
+    ctx.lineWidth=0.5;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // Phase lengths (frames @60fps)
+  const PH=[150,200,110,50]; // gather, hold, scatter, pause
+  let frame=0;
+
+  function easeOut(t){return 1-(1-t)*(1-t)*(1-t)}
+  function easeInOut(t){return t<.5?4*t*t*t:(t-1)*(2*t-2)*(2*t-2)+1}
+
+  function tick(){
+    requestAnimationFrame(tick);
+    // Clear with very faint trail for motion blur effect
+    ctx.fillStyle='rgba(6,10,16,0.35)';
+    ctx.fillRect(0,0,W,H);
+    frame++;
+    phaseTimer++;
+    if(phaseTimer>=PH[phase]){
+      phaseTimer=0; phase=(phase+1)%4;
+      if(phase===0) particles.forEach(p=>{p.sx=Math.random()*W;p.sy=Math.random()*H;});
+    }
+    const t=Math.min(phaseTimer/PH[phase],1);
+
+    particles.forEach(p=>{
+      p.rot+=p.rotSpd;
+      if(phase===0){
+        // Gather: converge toward letter outline
+        const ease=easeOut(t);
+        p.x+=(p.tx-p.x)*p.spd*(0.8+ease*1.2);
+        p.y+=(p.ty-p.y)*p.spd*(0.8+ease*1.2);
+        p.alpha=Math.min(p.alpha+0.025,0.9);
+        p.rotSpd*=0.96;
+      } else if(phase===1){
+        // Hold: gentle micro-drift in place, shimmer
+        const wave=Math.sin(frame*0.04+p.tx*0.01)*0.5;
+        p.x+=(p.tx-p.x)*0.07+wave*0.08;
+        p.y+=(p.ty-p.y)*0.07;
+        p.alpha=0.72+Math.sin(frame*0.06+p.ty*0.008)*0.12;
+        p.rotSpd=(Math.random()-.5)*0.003;
+        // refraction shimmer
+        p.refract=Math.sin(frame*0.08+p.tx*0.02)*3;
+      } else if(phase===2){
+        // Scatter: explode outward
+        p.x+=(p.sx-p.x)*0.07;
+        p.y+=(p.sy-p.y)*0.07;
+        p.alpha=Math.max(p.alpha-0.014,0.03);
+        p.rotSpd=(Math.random()-.5)*0.15;
+      } else {
+        // Pause: slow float
+        p.x+=(Math.random()-.5)*0.4;
+        p.y-=0.15;
+        p.alpha=Math.max(p.alpha-0.008,0.03);
+      }
+      drawShard(p,p.alpha);
+    });
+
+    // Ghost letter glow during HOLD phase only
+    if(phase===1){
+      const gAlpha=Math.min(t*0.12,0.12)*Math.sin(frame*0.03+1)*0.5+0.06;
+      ctx.save();
+      ctx.globalAlpha=gAlpha;
+      const fs=Math.min(W*0.42,340);
+      ctx.font=`700 ${fs}px "Rajdhani",sans-serif`;
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillStyle='#7DD4FC';
+      ctx.fillText('',W/2,H/2);
+      ctx.restore();
+    }
+  }
+
+  window.addEventListener('resize',resize);
+  resize();
+  tick();
+})();
+
+
+// ── DASHBOARD UI ──────────────────────────────────────────────────────────────
+document.getElementById('footerVer').textContent=
+  'v'+new Date().toISOString().slice(0,10).replace(/-/g,'.');
+
+let activeCategory='all';
+
+function renderCategories(){
+  const cats=[...new Set(DASHBOARDS.map(d=>d.cat))];
+  const bar=document.getElementById('categoryTabs');
+  bar.innerHTML=`<button class="cat-btn${activeCategory==='all'?' active':''}" onclick="setCategory('all',this)">All Systems</button>`;
+  cats.forEach(c=>{
+    bar.innerHTML+=`<button class="cat-btn${activeCategory===c?' active':''}" onclick="setCategory('${c}',this)">${c}</button>`;
+  });
+  document.getElementById('totalCount').textContent=DASHBOARDS.length;
+  document.getElementById('catCount').textContent=cats.length;
+}
+
+function setCategory(cat,btn){
+  activeCategory=cat;
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('activeFilter').textContent=cat==='all'?'All':cat;
+  renderCards();
+}
+
+function renderCards(){
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  const filtered=DASHBOARDS.filter(d=>{
+    const mC=activeCategory==='all'||d.cat===activeCategory;
+    const mQ=!q||d.name.toLowerCase().includes(q)||d.cat.toLowerCase().includes(q)||d.desc.toLowerCase().includes(q);
+    return mC&&mQ;
+  });
+  const grid=document.getElementById('cardGrid');
+  if(!filtered.length){
+    grid.innerHTML=`<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:40px;height:40px;margin-bottom:1rem;opacity:.35"><path d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg><div style="font-family:'Rajdhani',sans-serif;font-size:16px;color:#3B6A8A">No dashboards found</div></div>`;
+    return;
+  }
+  grid.innerHTML=filtered.map((d,i)=>`
+    <div class="dash-card" style="animation-delay:${i*0.07}s;--cc:${d.color}" onclick="window.open('${d.url}','_blank')">
+      <div class="card-accent"></div>
+      <div class="card-body">
+        <div class="card-icon-row">
+          <div class="card-icon">${d.icon}</div>
+          <div class="card-tag">${d.cat}</div>
+        </div>
+        <div class="card-title">${d.name}</div>
+        <div class="card-desc">${d.desc}</div>
+      </div>
+      <div class="card-footer">
+        <span class="card-url">${d.url}</span>
+        <a class="open-btn" href="${d.url}" target="_blank" onclick="event.stopPropagation()">
+          Open
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
+        </a>
+      </div>
+    </div>
+  `).join('');
+}
+
+renderCategories();
+renderCards();
+document.getElementById('activeFilter').textContent='All';
+</script>
+</body>
+</html>
